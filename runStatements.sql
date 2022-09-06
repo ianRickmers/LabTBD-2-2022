@@ -1,5 +1,5 @@
 -- 1) horario con menos citas durante el día por peluquería, identificando la comuna
-select p."nombre", h."horaInicio", minimo
+select p."nombre", comuna.nombre, h."horaInicio", minimo
 from (select  * ,min(s1.total) over(partition by s1.idPelu) as minimo 
 from(select distinct clp."idPeluqueria" as idPelu, c."idHorario" as idHorario, count(*) as total
     from public.cita as c
@@ -8,6 +8,7 @@ from(select distinct clp."idPeluqueria" as idPelu, c."idHorario" as idHorario, c
     order by clp."idPeluqueria" asc, total asc) as s1) as s2
 inner join public.peluqueria as p ON p.id = s2.idPelu
 inner join public.horario as h ON h.id = s2.idHorario
+inner join public.comuna ON comuna.id = p."idComuna"
 where s2.minimo=s2.total;
 
 
