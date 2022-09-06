@@ -102,23 +102,23 @@ WHERE servicio.tipo = 'TenirPelo' and
 
 -- 6) identificar el horario más concurrido por peluquería durante el 2018 y 2029,
 -- desagregados por mes
-create view pyh as select distinct cp."idPeluqueria", p.nombre, c."idHorario", c."mes", c."año",
-COUNT(c."idHorario") OVER(PARTITION BY p.id, c."idHorario", c."año", c."mes") AS CountOfOrders 
+create view pyh as select distinct cp."idPeluqueria", p.nombre, c."idHorario", c."mes", c."ano",
+COUNT(c."idHorario") OVER(PARTITION BY p.id, c."idHorario", c."ano", c."mes") AS CountOfOrders 
 from peluqueria as p, cliente_pelu as cp, cita as c,
 horario as h
 where p.id=cp."idPeluqueria" and cp."idCita"=c.id and
-c."idHorario"=h.id and c."año"=2017 or c."año"=2029
-order by cp."idPeluqueria", CountOfOrders desc, c."año", c."mes", c."idHorario";
+c."idHorario"=h.id and c."ano">2017 and c."ano"<2030
+order by cp."idPeluqueria", CountOfOrders desc, c."ano", c."mes", c."idHorario";
 
 
-select distinct s."idPeluqueria", s.nombre, s.CountOfOrders, s."idHorario", s."año", s."mes"
+select distinct s."idPeluqueria", s.nombre, s.CountOfOrders, s."idHorario", s."ano", s."mes"
 from pyh s
 inner join(select distinct pyh."nombre", pyh."idPeluqueria", max(pyh.CountOfOrders) as maximo
 FROM pyh
 group by pyh.nombre, pyh."idPeluqueria"
 order by pyh.nombre, maximo desc) z
 on s.nombre=z.nombre and s.CountOfOrders=z.maximo
-order by s."idPeluqueria", s.CountOfOrders, s.CountOfOrders, s."año", s."mes"
+order by s."idPeluqueria", s.CountOfOrders, s.CountOfOrders, s."ano", s."mes"
 
 
 
@@ -128,22 +128,22 @@ order by s."idPeluqueria", s.CountOfOrders, s.CountOfOrders, s."año", s."mes"
 
 -- 7) identificar al cliente que ha tenido las citas más largas por peluquería, por mes
 CREATE VIEW t2 as 
-(SELECT p.id as idPelu, p."nombre" as peluquería, c."año", c."mes", cl."nombre" as nombre_cliente, d."duracion" as duracion_cita 
+(SELECT p.id as idPelu, p."nombre" as peluquería, c."ano", c."mes", cl."nombre" as nombre_cliente, d."duracion" as duracion_cita 
 FROM cita as c, cliente as cl, cliente_pelu as clp, detalle as d, peluqueria as p 
 WHERE (cl."rut" = clp."idCliente") and 
       (clp."idCita" = c."id") and 
       (c."idDetalle" = d."id") and 
       (clp."idPeluqueria" = p."id") 
-ORDER BY p."nombre" asc, c."año", c."mes" asc, d."duracion" desc); 
+ORDER BY p."nombre" asc, c."ano", c."mes" asc, d."duracion" desc);
 
-select distinct t2.idPelu, t2.peluquería, t2.año, t2.mes, t2.nombre_cliente, t2.duracion_cita
+select distinct t2.idPelu, t2.peluquería, t2.ano, t2.mes, t2.nombre_cliente, t2.duracion_cita
 from t2
-inner join(select distinct t2.peluquería, t2.idPelu, max(t2.duracion_cita) as maximo
+inner join(select distinct t2.peluquería, t2.idPelu, max(t2.duracion_cita) over(partition by t2.peluquería,t2."ano", t2."mes") as maximo
 FROM t2
-group by t2.peluquería, t2.idPelu
+group by t2.peluquería, t2.idPelu, t2.duracion_cita,t2."ano", t2."mes"
 order by t2.peluquería, maximo desc) z
 on t2.peluquería=z.peluquería and t2.duracion_cita=z.maximo
-order by t2.idPelu, t2.duracion_cita,t2."año", t2."mes"
+order by t2.idPelu,t2."ano" , t2."mes", t2.duracion_cita
 
 
 
