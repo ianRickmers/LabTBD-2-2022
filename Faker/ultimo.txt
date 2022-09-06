@@ -1,0 +1,17 @@
+-- Datos de la tabla producto.
+INSERT INTO public.producto(
+	id, tipo, nombre, precio)
+	VALUES (1, 'Shampoo', 'TioNacho', 6000),
+	(2, 'Balsamo', 'Ballerina', 4000),
+	(3, 'Shampoo', 'Garnier', 5000),
+	(4, 'Balsamo', 'HeadAndShoulders', 6000),
+	(5, 'Shampoo', 'Medicasp', 8000);
+
+-- Datos de la tabla servicio.
+INSERT INTO public.servicio(
+	id, tipo)
+	VALUES (1, 'CorteHombre'),
+	(2, 'CorteMujer'),
+	(3, 'CorteNino'),
+	(4, 'CorteBarba'),
+	(5, 'TenirPelo');

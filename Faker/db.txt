@@ -1,0 +1,482 @@
+CREATE DATABASE "peluquerias";
+
+-- Se conecta a la base de datos peluquerias
+\c peluquerias;
+-- Table: public.comuna
+
+-- DROP TABLE IF EXISTS public.comuna;
+
+CREATE TABLE IF NOT EXISTS public.comuna
+(
+    id integer NOT NULL,
+    nombre character varying(25) COLLATE pg_catalog."default",
+    CONSTRAINT comuna_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.comuna
+    OWNER to postgres;
+
+
+
+
+
+
+
+-- Table: public.cliente
+
+-- DROP TABLE IF EXISTS public.cliente;
+
+CREATE TABLE IF NOT EXISTS public.cliente
+(
+    rut integer NOT NULL,
+    dv smallint,
+    nombre character varying(25) COLLATE pg_catalog."default",
+    apellido character varying(25) COLLATE pg_catalog."default",
+    genero character varying(1) COLLATE pg_catalog."default",
+    "idComuna" integer,
+    CONSTRAINT cliente_pkey PRIMARY KEY (rut),
+    CONSTRAINT fk_cliente_comuna FOREIGN KEY ("idComuna")
+        REFERENCES public.comuna (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.cliente
+    OWNER to postgres;
+
+
+
+
+
+
+
+-- Table: public.peluqueria
+
+-- DROP TABLE IF EXISTS public.peluqueria;
+
+CREATE TABLE IF NOT EXISTS public.peluqueria
+(
+    id integer NOT NULL,
+    nombre character varying(50) COLLATE pg_catalog."default",
+    direccion character varying(50) COLLATE pg_catalog."default",
+    numero integer,
+    "idComuna" integer,
+    CONSTRAINT peluqueria_pkey PRIMARY KEY (id),
+    CONSTRAINT fk_peluqueria_comuna FOREIGN KEY ("idComuna")
+        REFERENCES public.comuna (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.peluqueria
+    OWNER to postgres;
+
+
+
+
+
+
+
+-- Table: public.empleado
+
+-- DROP TABLE IF EXISTS public.empleado;
+
+CREATE TABLE IF NOT EXISTS public.empleado
+(
+    rut integer NOT NULL,
+    dv smallint,
+    nombre character varying(25) COLLATE pg_catalog."default",
+    apellido character varying(25) COLLATE pg_catalog."default",
+    "idComuna" integer,
+    "idPeluqueria" integer,
+    CONSTRAINT empleado_pkey PRIMARY KEY (rut),
+    CONSTRAINT fk_empleado_comuna FOREIGN KEY ("idComuna")
+        REFERENCES public.comuna (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID,
+    CONSTRAINT fk_empleado_peluqueria FOREIGN KEY ("idPeluqueria")
+        REFERENCES public.peluqueria (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.empleado
+    OWNER to postgres;
+
+
+
+
+
+
+
+-- Table: public.sueldo
+
+-- DROP TABLE IF EXISTS public.sueldo;
+
+CREATE TABLE IF NOT EXISTS public.sueldo
+(
+    id integer NOT NULL,
+    monto integer,
+    dia integer,
+    mes integer,
+    "ano" integer,
+    "idEmpleado" integer,
+    CONSTRAINT sueldo_pkey PRIMARY KEY (id),
+    CONSTRAINT fk_sueldo_empleado FOREIGN KEY ("idEmpleado")
+        REFERENCES public.empleado (rut) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.sueldo
+    OWNER to postgres;
+
+
+
+
+
+
+
+-- Table: public.peluquero
+
+-- DROP TABLE IF EXISTS public.peluquero;
+
+CREATE TABLE IF NOT EXISTS public.peluquero
+(
+    id integer NOT NULL,
+    "idEmpleado" integer,
+    CONSTRAINT peluquero_pkey PRIMARY KEY (id),
+    CONSTRAINT fk_peluquero_empleado FOREIGN KEY ("idEmpleado")
+        REFERENCES public.empleado (rut) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.peluquero
+    OWNER to postgres;
+
+
+
+
+
+
+
+-- Table: public.horario
+
+-- DROP TABLE IF EXISTS public.horario;
+
+CREATE TABLE IF NOT EXISTS public.horario
+(
+    id integer NOT NULL,
+    "horaInicio" character varying(5) COLLATE pg_catalog."default",
+    CONSTRAINT horario_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.horario
+    OWNER to postgres;
+
+
+
+
+
+
+
+-- Table: public.pago
+
+-- DROP TABLE IF EXISTS public.pago;
+
+CREATE TABLE IF NOT EXISTS public.pago
+(
+    id integer NOT NULL,
+    total integer,
+    CONSTRAINT pago_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.pago
+    OWNER to postgres;
+
+
+
+
+
+
+
+-- Table: public.detalle
+
+-- DROP TABLE IF EXISTS public.detalle;
+
+CREATE TABLE IF NOT EXISTS public.detalle
+(
+    id integer NOT NULL,
+    duracion integer,
+    "idPago" integer,
+    CONSTRAINT detalle_pkey PRIMARY KEY (id),
+    CONSTRAINT fk_detalle_pago FOREIGN KEY ("idPago")
+        REFERENCES public.pago (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.detalle
+    OWNER to postgres;
+
+
+
+
+
+
+
+-- Table: public.cita
+
+-- DROP TABLE IF EXISTS public.cita;
+
+CREATE TABLE IF NOT EXISTS public.cita
+(
+    id integer NOT NULL,
+    dia integer,
+    mes integer,
+    "ano" integer,
+    "idDetalle" integer,
+    "idPeluquero" integer,
+    "idHorario" integer,
+    CONSTRAINT cita_pkey PRIMARY KEY (id),
+    CONSTRAINT fk_cita_detalle FOREIGN KEY ("idDetalle")
+        REFERENCES public.detalle (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID,
+    CONSTRAINT fk_cita_horario FOREIGN KEY ("idHorario")
+        REFERENCES public.horario (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID,
+    CONSTRAINT fk_cita_peluquero FOREIGN KEY ("idPeluquero")
+        REFERENCES public.peluquero (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.cita
+    OWNER to postgres;
+
+
+
+
+
+
+
+-- Table: public.cliente_pelu
+
+-- DROP TABLE IF EXISTS public.cliente_pelu;
+
+CREATE TABLE IF NOT EXISTS public.cliente_pelu
+(
+    "idCliente" integer,
+    "idPeluqueria" integer,
+    "idCita" integer,
+    CONSTRAINT fk_cliente_pelu_cita FOREIGN KEY ("idCita")
+        REFERENCES public.cita (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_cliente_pelu_cliente FOREIGN KEY ("idCliente")
+        REFERENCES public.cliente (rut) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_cliente_pelu_peluqueria FOREIGN KEY ("idPeluqueria")
+        REFERENCES public.peluqueria (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.cliente_pelu
+    OWNER to postgres;
+
+
+
+
+
+
+
+-- Table: public.producto
+
+-- DROP TABLE IF EXISTS public.producto;
+
+CREATE TABLE IF NOT EXISTS public.producto
+(
+    id integer NOT NULL,
+    tipo character varying(25) COLLATE pg_catalog."default",
+    nombre character varying(25) COLLATE pg_catalog."default",
+    precio integer,
+    CONSTRAINT producto_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.producto
+    OWNER to postgres;
+
+
+
+
+
+
+
+-- Table: public.servicio
+
+-- DROP TABLE IF EXISTS public.servicio;
+
+CREATE TABLE IF NOT EXISTS public.servicio
+(
+    id integer NOT NULL,
+    tipo character varying(25) COLLATE pg_catalog."default",
+    CONSTRAINT servicio_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.servicio
+    OWNER to postgres;
+
+
+
+
+
+
+
+-- Table: public.producto_detalle
+
+-- DROP TABLE IF EXISTS public.producto_detalle;
+
+CREATE TABLE IF NOT EXISTS public.producto_detalle
+(
+    "idProducto" integer,
+    "idDetalle" integer,
+    CONSTRAINT fk_producto_detalle_detalle FOREIGN KEY ("idDetalle")
+        REFERENCES public.detalle (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_producto_detalle_producto FOREIGN KEY ("idProducto")
+        REFERENCES public.producto (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.producto_detalle
+    OWNER to postgres;
+
+
+
+
+
+
+
+-- Table: public.servicio_detalle
+
+-- DROP TABLE IF EXISTS public.servicio_detalle;
+
+CREATE TABLE IF NOT EXISTS public.servicio_detalle
+(
+    "idServicio" integer,
+    "idDetalle" integer,
+    CONSTRAINT fk_servicio_detalle_detalle FOREIGN KEY ("idDetalle")
+        REFERENCES public.detalle (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_servicio_detalle_servicio FOREIGN KEY ("idServicio")
+        REFERENCES public.servicio (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.servicio_detalle
+    OWNER to postgres;
+
+
+
+
+
+
+
+-- Table: public.precio
+
+-- DROP TABLE IF EXISTS public.precio;
+
+CREATE TABLE IF NOT EXISTS public.precio
+(
+    id integer NOT NULL,
+    monto integer,
+    CONSTRAINT precio_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.precio
+    OWNER to postgres;
+
+
+
+
+
+
+
+-- Table: public.servicio_precio
+
+-- DROP TABLE IF EXISTS public.servicio_precio;
+
+CREATE TABLE IF NOT EXISTS public.servicio_precio
+(
+    "idPrecio" integer,
+    "idServicio" integer,
+    "idPeluqueria" integer,
+    CONSTRAINT fk_servicio_precio_peluqueria FOREIGN KEY ("idPeluqueria")
+        REFERENCES public.peluqueria (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_servicio_precio_precio FOREIGN KEY ("idPrecio")
+        REFERENCES public.precio (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_servicio_precio_servicio FOREIGN KEY ("idServicio")
+        REFERENCES public.servicio (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.servicio_precio
+    OWNER to postgres;
